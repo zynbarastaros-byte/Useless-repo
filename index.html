@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yes or No?</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --yes: #00ffb2;
+    --no: #ff2d6f;
+    --bg: #07070f;
+    --surface: #0f0f1e;
+    --text: #e8e8f0;
+    --muted: #555577;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,178,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,178,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridDrift 20s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes gridDrift {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(48px); }
+  }
+
+  /* Radial glow center */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(0,255,178,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 3rem 2rem;
+    max-width: 640px;
+    width: 100%;
+  }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 14vw, 7rem);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .headline span {
+    color: var(--yes);
+    text-shadow: 0 0 30px rgba(0,255,178,0.6), 0 0 80px rgba(0,255,178,0.2);
+  }
+
+  .sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 3.5rem;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.7s 0.35s ease both;
+  }
+
+  .btn {
+    position: relative;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.12em;
+    padding: 1rem 3.2rem;
+    border: 2px solid;
+    background: transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .btn:hover::before { opacity: 0.12; }
+  .btn:active { transform: scale(0.96); }
+
+  /* YES button */
+  .btn-yes {
+    color: var(--yes);
+    border-color: var(--yes);
+    box-shadow: 0 0 18px rgba(0,255,178,0.2), inset 0 0 18px rgba(0,255,178,0.04);
+    text-shadow: 0 0 20px rgba(0,255,178,0.7);
+  }
+  .btn-yes::before { background: var(--yes); }
+  .btn-yes:hover {
+    box-shadow: 0 0 40px rgba(0,255,178,0.45), 0 0 80px rgba(0,255,178,0.15), inset 0 0 20px rgba(0,255,178,0.1);
+    transform: translateY(-3px);
+  }
+
+  /* NO button */
+  .btn-no {
+    color: var(--no);
+    border-color: var(--no);
+    box-shadow: 0 0 18px rgba(255,45,111,0.2), inset 0 0 18px rgba(255,45,111,0.04);
+    text-shadow: 0 0 20px rgba(255,45,111,0.7);
+  }
+  .btn-no::before { background: var(--no); }
+  .btn-no:hover {
+    box-shadow: 0 0 40px rgba(255,45,111,0.45), 0 0 80px rgba(255,45,111,0.15), inset 0 0 20px rgba(255,45,111,0.1);
+    transform: translateY(-3px);
+  }
+
+  /* Response message */
+  .response {
+    margin-top: 3rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    min-height: 2.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .response.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .response.yes-res { color: var(--yes); text-shadow: 0 0 24px rgba(0,255,178,0.7); }
+  .response.no-res  { color: var(--no);  text-shadow: 0 0 24px rgba(255,45,111,0.7); }
+
+  /* Particle burst */
+  .particle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: burst 0.9s ease-out forwards;
+  }
+  @keyframes burst {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Corner decorations */
+  .corner {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border-color: var(--muted);
+    border-style: solid;
+    opacity: 0.3;
+  }
+  .corner-tl { top: 24px; left: 24px; border-width: 2px 0 0 2px; }
+  .corner-tr { top: 24px; right: 24px; border-width: 2px 2px 0 0; }
+  .corner-bl { bottom: 24px; left: 24px; border-width: 0 0 2px 2px; }
+  .corner-br { bottom: 24px; right: 24px; border-width: 0 2px 2px 0; }
+</style>
+</head>
+<body>
+
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="container">
+  <p class="eyebrow">make your choice</p>
+  <h1 class="headline">YES <span>OR</span> NO?</h1>
+  <p class="sub">// THE MOMENT OF TRUTH //</p>
+
+  <div class="buttons">
+    <button class="btn btn-yes" onclick="answer('yes', event)">YES</button>
+    <button class="btn btn-no"  onclick="answer('no',  event)">NO</button>
+  </div>
+
+  <div class="response" id="response"></div>
+</div>
+
+<script>
+const yesMessages = [
+  "ABSOLUTELY. LET'S GO.",
+  "YES. NO HESITATION.",
+  "CONFIRMED. MOVING FORWARD.",
+  "POSITIVE. 100%.",
+  "AFFIRMATIVE. DO IT.",
+];
+const noMessages = [
+  "HARD NO. NOT TODAY.",
+  "NEGATIVE. STAND DOWN.",
+  "DENIED. WALK AWAY.",
+  "NOPE. NOT A CHANCE.",
+  "REJECTED. FULL STOP.",
+];
+
+function answer(type, e) {
+  const el = document.getElementById('response');
+  const msgs = type === 'yes' ? yesMessages : noMessages;
+  el.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  el.className = 'response show ' + (type === 'yes' ? 'yes-res' : 'no-res');
+  spawnParticles(e, type === 'yes' ? '#00ffb2' : '#ff2d6f');
+}
+
+function spawnParticles(e, color) {
+  const x = e.clientX, y = e.clientY;
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 4 + Math.random() * 7;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 130;
+    p.style.cssText = `
+      left:${x}px; top:${y}px; width:${size}px; height:${size}px;
+      background:${color};
+      box-shadow: 0 0 ${size*2}px ${color};
+      --dx:${Math.cos(angle)*dist}px;
+      --dy:${Math.sin(angle)*dist}px;
+      animation-duration:${0.6 + Math.random()*0.5}s;
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+</script>
+</body>
+</html>
